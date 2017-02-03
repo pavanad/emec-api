@@ -13,14 +13,24 @@ class Institution(object):
 		
 		self.data_ies = {}		
 		self.code_ies = code_ies
+
+	def parse(self):
+		self._parse_institution_details()
+		self._parse_campus()
 		
 
-	def get_institution_details(self):    
+	def _parse_institution_details(self):    
     	
 		url = 'http://emec.mec.gov.br/emec/consulta-ies/index/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies))
     
-		response = requests.get(url)
+		try:
+			response = requests.get(url)
+		except Exception as e:
+			return str(e)
+
 		soup = BeautifulSoup(response.content, 'html.parser')
+
+
 	    
 		fields_ies = soup.find_all('tr', 'avalLinhaCampos')
 		for fields in fields_ies:
@@ -55,7 +65,7 @@ class Institution(object):
 		return self.data_ies
 
 
-	def get_campus(self):
+	def _parse_campus(self):
     
 		campus = []
 		url = 'http://emec.mec.gov.br/emec/consulta-ies/listar-endereco/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/list/1000'
@@ -71,7 +81,8 @@ class Institution(object):
 			item = {
 				'code': cells[0].get_text(strip=True),
 				'city': cells[4].get_text(strip=True),
-				'uf': cells[5].get_text(strip=True) 
+				'uf': cells[5].get_text(strip=True) ,
+				'courses': self._parse_courses(int(cells[0].get_text(strip=True)))
 			}
 			campus.append(item)
     
@@ -80,11 +91,15 @@ class Institution(object):
 		return campus
 
 
-	def get_courses(self, code_campus):
+	def _parse_courses(self, code_campus):
 
 		url = 'http://emec.mec.gov.br/emec/consulta-ies/listar-curso-endereco/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/aa547dc9e0377b562e2354d29f06085f/' + base64.b64encode(str(code_campus)) + '/list/1000'
 
-		response = requests.get(url)
+		try:
+			response = requests.get(url)
+		except Exception as e:
+			return str(e)
+
 		soup = BeautifulSoup(response.content, 'html.parser')
     
 		table = soup.find(id='listar-ies-cadastro')
@@ -96,6 +111,14 @@ class Institution(object):
 			data.append(normalize('NFKD',course).encode('utf-8').capitalize())
     
 		return data
+
+
+	def get_full_data(self):
+
+		if len(self.data_ies):
+			return self.data_ies
+
+		return None
 
 
 
