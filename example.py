@@ -7,3 +7,4 @@ ies.parse()
 
 data_ies = ies.get_full_data()
 
+ies.write_json('emec.json')
