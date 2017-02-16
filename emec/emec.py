@@ -1,6 +1,5 @@
 # -*- conding: utf-8 -*-
 
-import json
 import base64
 import requests
 from bs4 import BeautifulSoup
@@ -11,6 +10,7 @@ from unicodedata import normalize
 class Institution(object):
 
 	def __init__(self, code_ies):
+		
 		self.data_ies = {}		
 		self.code_ies = code_ies
 
@@ -119,13 +119,6 @@ class Institution(object):
 			return self.data_ies
 
 		return None
-
-
-	def write_json(self, filename):
-
-		if len(self.data_ies):
-			with open(filename, 'w') as outfile:
-				json.dump(self.data_ies, outfile)
 
 
 
