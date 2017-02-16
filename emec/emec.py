@@ -1,5 +1,6 @@
 # -*- conding: utf-8 -*-
 
+import json
 import base64
 import requests
 from bs4 import BeautifulSoup
@@ -121,6 +122,13 @@ class Institution(object):
 		return None
 
 
+	def write_json(self, filename):
 
+		if len(self.data_ies):
+			with open(filename, 'w') as outfile:
+				json.dump(self.data_ies, outfile)
+
+
+				
 
 		
