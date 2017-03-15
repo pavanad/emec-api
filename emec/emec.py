@@ -7,23 +7,31 @@ from bs4 import BeautifulSoup
 from utils import normalize_key
 from unicodedata import normalize
 
-
 class Institution(object):
 
-	def __init__(self, code_ies):
+	def __init__(self, code_ies=None):
 		
 		self.data_ies = {}		
 		self.code_ies = code_ies
 
+	def set_code_ies(self, code_ies):
+
+		self.data_ies = {}		
+		self.code_ies = code_ies
+
 	def parse(self):
+
+		if self.code_ies == None or self.code_ies == 0:
+			print 'informe o codigo da ies'
+			return
+
 		self._parse_institution_details()
 		self._parse_campus()
-		
 
 	def _parse_institution_details(self):    
     	
 		url = 'http://emec.mec.gov.br/emec/consulta-ies/index/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies))
-    
+
 		try:
 			response = requests.get(url)
 		except Exception as e:
@@ -31,11 +39,8 @@ class Institution(object):
 
 		soup = BeautifulSoup(response.content, 'html.parser')
 
-
-	    
 		fields_ies = soup.find_all('tr', 'avalLinhaCampos')
 		for fields in fields_ies:
-	        
 			key = ''
 			value = ''
 			for f in fields.find_all('td'):    
@@ -65,7 +70,6 @@ class Institution(object):
 	    
 		return self.data_ies
 
-
 	def _parse_campus(self):
     
 		campus = []
@@ -91,7 +95,6 @@ class Institution(object):
 
 		return campus
 
-
 	def _parse_courses(self, code_campus):
 
 		url = 'http://emec.mec.gov.br/emec/consulta-ies/listar-curso-endereco/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/aa547dc9e0377b562e2354d29f06085f/' + base64.b64encode(str(code_campus)) + '/list/1000'
@@ -113,14 +116,12 @@ class Institution(object):
     
 		return data
 
-
 	def get_full_data(self):
 
 		if len(self.data_ies):
 			return self.data_ies
 
 		return None
-
 
 	def write_json(self, filename):
 
