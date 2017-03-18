@@ -5,7 +5,7 @@ from emec import *
 
 __author__ = 'Adilson Pavan'
 
-VERSION = (0,1,0)
+VERSION = (0,1,2)
 
 def get_version():
     version = '%s.%s' % (VERSION[0], VERSION[1])
