@@ -110,14 +110,11 @@ class Institution(object):
 
 		data = []
 		for r in rows:                
-			course = r.tr.td.get_text(strip=True)
-			
 			url_list = r.tr.td.a['href'].split('/')
 			code_course = url_list[len(url_list)-1]
 
-			self.__parse_course_details(code_course)
-
-			data.append(normalize('NFKD',course).encode('utf-8').capitalize())
+			course = self.__parse_course_details(code_course)
+			data.append(course)
     
 		return data
 
@@ -132,10 +129,22 @@ class Institution(object):
 
 		soup = BeautifulSoup(response.content, 'html.parser')
 		table = soup.find(id='listar-ies-cadastro')
-		rows = table.find_all('tbody')
-
+		
+		item = {}
+		rows = table.tbody.find_all('tr')
 		for r in rows:
-			print r.tr.td
+			cells = r.find_all('td')
+			item['codigo'] = cells[0].get_text(strip=True)
+			item['modalidade'] = cells[1].get_text(strip=True)
+			item['grau'] = cells[2].get_text(strip=True)
+			item['curso'] = normalize('NFKD', cells[3].get_text(strip=True)).encode('utf-8').capitalize()
+			item['uf'] = cells[4].get_text(strip=True)
+			item['municipio'] = cells[5].get_text(strip=True)
+			item['enade'] = cells[6].get_text(strip=True)
+			item['cpc'] = cells[7].get_text(strip=True)
+			item['cc'] = cells[8].get_text(strip=True)
+
+		return item
 
 	def get_full_data(self):
 
