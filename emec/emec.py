@@ -109,12 +109,14 @@ class Institution(object):
 		rows = table.find_all('tbody')
 
 		data = []
-		for r in rows:                
-			url_list = r.tr.td.a['href'].split('/')
-			code_course = url_list[len(url_list)-1]
+		for r in rows: 
+			
+			if r.tr.td.a:
+				url_list = r.tr.td.a['href'].split('/')
+				code_course = url_list[len(url_list)-1]
 
-			course = self.__parse_course_details(code_course)
-			data.append(course)
+				course = self.__parse_course_details(code_course)
+				data.append(course)
     
 		return data
 

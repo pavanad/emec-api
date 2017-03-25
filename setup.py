@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
 	name = 'emec-api',
-	version = '0.1.4',
+	version = '0.1.5',
 	url = 'https://github.com/pavanad/emec-api',
 	license = 'MIT License',
 	author = 'Adilson Pavan',
