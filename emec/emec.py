@@ -12,14 +12,17 @@ from utils import normalize_key
 
 
 class Institution(object):
+	"""
+	Classe responsavel pela coleta de todos os daddos da instituicao no site do e-MEC.
+	
+	Realiza o scraping em busca de dados detalhados da instituicao e dos cursos de cada campus.
+	"""
 
 	def __init__(self, code_ies=None):
-		
 		self.data_ies = {}		
 		self.code_ies = code_ies
 
 	def set_code_ies(self, code_ies):
-
 		self.data_ies = {}		
 		self.code_ies = code_ies
 
@@ -35,10 +38,10 @@ class Institution(object):
 
 	def __parse_institution_details(self):    
 			
-		url = 'http://emec.mec.gov.br/emec/consulta-ies/index/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies))
+		URL = 'http://emec.mec.gov.br/emec/consulta-ies/index/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies))
 
 		try:
-			response = requests.get(url)
+			response = requests.get(URL)
 		except Exception as e:
 			print str(e)
 			return False
@@ -57,14 +60,15 @@ class Institution(object):
 					else:
 						value = aux
 						self.data_ies[key] = value
-
+						
+		# insere o codigo da ies
+		self.data_ies['code_ies'] = self.code_ies
+		
 		# pega as notas de conceito da ies do MEC
-
 		table = soup.find(id='listar-ies-cadastro')		
-		if table.tbody:		
-				
+		
+		if table is not None and table.tbody is not None:	
 			index = table.tbody.find_all('td')
-			
 			if len(index) == 9:
 				item = {
 					'ci': index[1].get_text(strip=True),
@@ -81,14 +85,17 @@ class Institution(object):
 	def __parse_campus(self):
 
 		campus = []
-		url = 'http://emec.mec.gov.br/emec/consulta-ies/listar-endereco/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/list/1000'
+		URL = 'http://emec.mec.gov.br/emec/consulta-ies/listar-endereco/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/list/1000'
 
-		response = requests.get(url)
+		response = requests.get(URL)
 		soup = BeautifulSoup(response.content, 'html.parser')
 		table = soup.find(id='listar-ies-cadastro')
 		
-		if table.tbody:			
-			rows = table.tbody.find_all('tr')	
+		if table is None or table.tbody is None:
+			return
+					
+		rows = table.tbody.find_all('tr')
+		if rows:
 			for r in rows:
 				cells = r.find_all('td')
 				if len(cells) > 1:
@@ -100,16 +107,13 @@ class Institution(object):
 					campus.append(item)
 	
 			self.data_ies['campus'] = campus
-			
-			return campus
-
+		
 	def __parse_courses(self):
 
-		#url = 'http://emec.mec.gov.br/emec/consulta-ies/listar-curso-endereco/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/aa547dc9e0377b562e2354d29f06085f/' + base64.b64encode(str(code_campus)) + '/list/1000'
-		url = 'http://emec.mec.gov.br/emec/consulta-ies/listar-curso-agrupado/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/list/1000?no_curso='
+		URL = 'http://emec.mec.gov.br/emec/consulta-ies/listar-curso-agrupado/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/list/1000?no_curso='
 		
 		try:	
-			response = requests.get(url)
+			response = requests.get(URL)
 		except Exception as e:
 			print str(e)
 			return False
@@ -117,33 +121,38 @@ class Institution(object):
 		soup = BeautifulSoup(response.content, 'html.parser')
 		table = soup.find(id='listar-ies-cadastro')
 		
-		if table.tbody:
-					
-			courses = []
-			rows = table.tbody.find_all('tr')
-			
-			for r in rows: 
-				if r.td.a:
-					url_list = r.td.a['href'].split('/')
-					code_course = url_list[len(url_list)-1]
-					
-					course_details = self.__parse_course_details(code_course)
+		if table is None or table.tbody is None:
+			return
+		
+		courses = []
+		rows = table.tbody.find_all('tr')
+		
+		if rows is None:
+			return
+		
+		for r in rows: 
+			if r.td.a:
+				url_list = r.td.a['href'].split('/')
+				code_course = url_list[len(url_list)-1]
+				
+				course_details = self.__parse_course_details(code_course)					
+				if course_details:
 					courses += course_details
-					
-					sys.stdout.write('.')
-					sys.stdout.flush()
-					
-			
-			self.data_ies['courses'] = courses
-			
-			return courses
+				
+				sys.stdout.write('.')
+				sys.stdout.flush()
+				
+		
+		self.data_ies['courses'] = courses
+		
+		return courses
 
 	def __parse_course_details(self, code_course):
 		
-		url = 'http://emec.mec.gov.br/emec/consulta-curso/listar-curso-desagrupado/9f1aa921d96ca1df24a34474cc171f61/'+ code_course + '/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies))
+		URL = 'http://emec.mec.gov.br/emec/consulta-curso/listar-curso-desagrupado/9f1aa921d96ca1df24a34474cc171f61/'+ code_course + '/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies))
 
 		try:
-			response = requests.get(url)
+			response = requests.get(URL)
 		except Exception as e:
 			print str(e)
 			return False
@@ -151,41 +160,56 @@ class Institution(object):
 		soup = BeautifulSoup(response.content, 'html.parser')
 		table = soup.find(id='listar-ies-cadastro')
 		
-		if table.tbody:
-			courses_details = []
-			rows = table.tbody.find_all('tr')
+		if table is None or table.tbody is None:
+			return 
+		
+		courses_details = []
+		rows = table.tbody.find_all('tr')
+		
+		if rows is None:
+			return
+		
+		for r in rows:
+			cells = r.find_all('td')
 			
-			for r in rows:
-				cells = r.find_all('td')
+			if len(cells) >= 9:
+				item = {
+					'codigo': cells[0].get_text(strip=True),
+					'modalidade': cells[1].get_text(strip=True),
+					'grau': cells[2].get_text(strip=True),
+					'curso': normalize('NFKD', cells[3].get_text(strip=True)).encode('utf-8').capitalize(),
+					'uf': cells[4].get_text(strip=True),
+					'municipio': cells[5].get_text(strip=True),
+					'enade': cells[6].get_text(strip=True),
+					'cpc': cells[7].get_text(strip=True),
+					'cc': cells[8].get_text(strip=True),
+				}
+				courses_details.append(item)
 				
-				if len(cells) >= 9:
-					item = {
-						'codigo': cells[0].get_text(strip=True),
-						'modalidade': cells[1].get_text(strip=True),
-						'grau': cells[2].get_text(strip=True),
-						'curso': normalize('NFKD', cells[3].get_text(strip=True)).encode('utf-8').capitalize(),
-						'uf': cells[4].get_text(strip=True),
-						'municipio': cells[5].get_text(strip=True),
-						'enade': cells[6].get_text(strip=True),
-						'cpc': cells[7].get_text(strip=True),
-						'cc': cells[8].get_text(strip=True),
-					}
-					courses_details.append(item)
-					
-			return courses_details
+		return courses_details
 
 	def get_full_data(self):
-
+		"""Retorna os dados completos da instituicao.
+		
+		Returns:
+			Objeto Json com todos os dados da instituicao.
+		"""
+		
 		if len(self.data_ies):
 			return self.data_ies
 
 		return None
 
 	def write_json(self, filename):
+		"""Escreve o arquivo json no disco.
+		
+		Args:
+			filename (string): recebe o nome com o cainho completo do arquivo.
+		"""
 
 		if len(self.data_ies):
 			with open(filename, 'w') as outfile:
-				json.dump(self.data_ies, outfile)
+				json.dump(self.data_ies, outfile, indent=4)
 
 
 				
