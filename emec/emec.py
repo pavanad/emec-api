@@ -1,6 +1,5 @@
 # -*- conding: utf-8 -*-
 
-import sys
 import json
 import base64
 from unicodedata import normalize
@@ -19,15 +18,32 @@ class Institution(object):
 	"""
 
 	def __init__(self, code_ies=None):
+		"""
+		Construtor da classe.
+		
+		Args:
+			code_ies (int):		Codigo da instituicao de ensino na base de dados do MEC
+		"""
+		
 		self.data_ies = {}		
 		self.code_ies = code_ies
 
 	def set_code_ies(self, code_ies):
+		"""
+		Informa o codigo da ies
+		
+		Args:
+			code_ies (int):		Codigo da instituicao de ensino na base de dados do MEC
+		"""
+		
 		self.data_ies = {}		
 		self.code_ies = code_ies
 
 	def parse(self):
-
+		"""
+		Realiza o parse completo de todos os dados da ies. 
+		"""
+		
 		if self.code_ies == None or self.code_ies == 0:
 			print 'informe o codigo da ies'
 			return False
@@ -37,7 +53,10 @@ class Institution(object):
 		self.__parse_courses()
 
 	def __parse_institution_details(self):    
-			
+		"""
+		Realiza o parse de todos os dados da instituicao, mantenedora e as notas de conceito do MEC.
+		"""
+		
 		URL = 'http://emec.mec.gov.br/emec/consulta-ies/index/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies))
 
 		try:
@@ -64,7 +83,7 @@ class Institution(object):
 		# insere o codigo da ies
 		self.data_ies['code_ies'] = self.code_ies
 		
-		# pega as notas de conceito da ies do MEC
+		# pega as notas de conceito do MEC
 		table = soup.find(id='listar-ies-cadastro')		
 		
 		if table is not None and table.tbody is not None:	
@@ -83,6 +102,9 @@ class Institution(object):
 		return self.data_ies
 
 	def __parse_campus(self):
+		"""
+		Realiza o parse de todos os campus referente a ies. 
+		"""
 
 		campus = []
 		URL = 'http://emec.mec.gov.br/emec/consulta-ies/listar-endereco/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/list/1000'
@@ -109,7 +131,10 @@ class Institution(object):
 			self.data_ies['campus'] = campus
 		
 	def __parse_courses(self):
-
+		"""
+		Realiza o parse de todos os dados dos cursos.
+		"""
+		
 		URL = 'http://emec.mec.gov.br/emec/consulta-ies/listar-curso-agrupado/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies)) + '/list/1000?no_curso='
 		
 		try:	
@@ -139,15 +164,18 @@ class Institution(object):
 				if course_details:
 					courses += course_details
 				
-				sys.stdout.write('.')
-				sys.stdout.flush()
-				
 		
 		self.data_ies['courses'] = courses
 		
 		return courses
 
 	def __parse_course_details(self, code_course):
+		"""
+		Realia o parse dos dados detalhados de cada curso.
+		
+		Args:
+			code_course (int):		Codigo do curso na base de dados do MEC.
+		"""
 		
 		URL = 'http://emec.mec.gov.br/emec/consulta-curso/listar-curso-desagrupado/9f1aa921d96ca1df24a34474cc171f61/'+ code_course + '/d96957f455f6405d14c6542552b0f6eb/' + base64.b64encode(str(self.code_ies))
 
@@ -189,7 +217,8 @@ class Institution(object):
 		return courses_details
 
 	def get_full_data(self):
-		"""Retorna os dados completos da instituicao.
+		"""
+		Retorna os dados completos da instituicao.
 		
 		Returns:
 			Objeto Json com todos os dados da instituicao.
@@ -201,10 +230,11 @@ class Institution(object):
 		return None
 
 	def write_json(self, filename):
-		"""Escreve o arquivo json no disco.
+		"""
+		Escreve o arquivo json no disco.
 		
 		Args:
-			filename (string): recebe o nome com o cainho completo do arquivo.
+			filename (string):		Nome com o caminho completo do arquivo.
 		"""
 
 		if len(self.data_ies):
