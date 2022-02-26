@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "emec-api"
+version = "0.1.7"
+description = "API Python para obter informacoes de instituicoes de ensino superior."
+authors = ["Adilson Pavan <adilson.pavan@gmail.com>"]
+license = "MIT License"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+beautifulsoup4 = "^4.10.0"
+requests = "^2.27.1"
+
+[tool.poetry.dev-dependencies]
+black = "^22.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
