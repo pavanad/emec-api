@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from emec.emec import Institution
+from emec.api.client import Institution
 
 ies = Institution(22)
 ies.parse()

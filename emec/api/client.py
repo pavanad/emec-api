@@ -13,7 +13,7 @@ from .utils import normalize_key
 class Institution:
     """
     Classe responsavel pela coleta de todos os daddos da instituicao no site do e-MEC.
-    Realiza o scraping em busca de dados detalhados da instituicao e dos cursos de cada campus.
+    Realiza o scraping em busca de dados detalhados da IE e dos cursos de cada campus.
     """
 
     def __init__(self, code_ies: int):
@@ -36,7 +36,7 @@ class Institution:
 
     def parse(self) -> None:
         """Realiza o parse completo de todos os dados da ies."""
-        if self.code_ies == None or self.code_ies == 0:
+        if self.code_ies is None or self.code_ies == 0:
             print("informe o codigo da ies")
             return
 
@@ -54,7 +54,10 @@ class Institution:
         """
         ies_code = str(self.code_ies).encode("utf-8")
         ies_b64 = base64.b64encode(ies_code).decode("utf-8")
-        URL = f"https://emec.mec.gov.br/emec/consulta-ies/index/d96957f455f6405d14c6542552b0f6eb/{ies_b64}"
+        URL = (
+            f"https://emec.mec.gov.br/emec/consulta-ies/index"
+            f"/d96957f455f6405d14c6542552b0f6eb/{ies_b64}"
+        )
 
         try:
             response = requests.get(URL)
