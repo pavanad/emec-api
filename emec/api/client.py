@@ -159,7 +159,10 @@ class Institution:
                 url_list = r.td.a["href"].split("/")
                 course_code = url_list[len(url_list) - 1]
                 tasks.append(self.__parse_course_details(course_code, session))
-        courses = await asyncio.gather(*tasks)
+        response_tasks = await asyncio.gather(*tasks)
+
+        for item in response_tasks:
+            courses.extend(item)
 
         self.data_ies["courses"] = courses
         return courses
@@ -269,5 +272,5 @@ class Institution:
         Args:
             filename (str): nome com o caminho completo do arquivo.
         """
-        with open(filename, "a", encoding="utf-8") as outfile:
+        with open(filename, "w", encoding="utf-8") as outfile:
             json.dump(self.data_ies, outfile, indent=4, ensure_ascii=False)
