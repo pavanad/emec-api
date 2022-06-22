@@ -12,5 +12,5 @@ setup(
     keywords="universidades cursos emec e-mec api brasil",
     description="API Python para obter informacoes de instituicoes de ensino superior.",
     packages=find_packages(),
-    install_requires=["beautifulsoup4==4.5.3", "requests==2.13.0"],
+    install_requires=["beautifulsoup4==4.5.3"],
 )

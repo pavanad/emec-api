@@ -1,0 +1,8 @@
+[flake8]
+max-line-length = 88
+ignore = E305, W503     ; W503 go against PEP 8
+exclude =
+    .git
+    __pycache__
+    .pytest_cache
+    .vscode
