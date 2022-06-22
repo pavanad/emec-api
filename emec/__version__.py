@@ -2,7 +2,7 @@
 
 __author__ = "Adilson Pavan"
 
-VERSION = (0, 1, 6)
+VERSION = (0, 1, 7)
 
 
 def get_version():
