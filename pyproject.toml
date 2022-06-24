@@ -11,15 +11,16 @@ emec = "emec.__main__:main"
 [tool.poetry.dependencies]
 python = "^3.9"
 beautifulsoup4 = "^4.10.0"
-bandit = "^1.7.3"
 cleo = "^0.8.1"
 pyfiglet = "^0.8.post1"
 aiohttp = "^3.8.1"
+pandas = "^1.4.2"
 
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
 flake8 = "^4.0.1"
+bandit = "^1.7.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

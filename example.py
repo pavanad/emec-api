@@ -10,4 +10,6 @@ ies.parse()
 elapsed = time.time() - start
 print(f"Elapsed: {elapsed}")
 
-ies.write_json("emec.json")
+ies.to_json("emec.json")
+
+ies.to_csv("emec.csv")

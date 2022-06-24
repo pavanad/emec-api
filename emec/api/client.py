@@ -3,9 +3,11 @@
 import asyncio
 import base64
 import json
+import os
 from unicodedata import normalize
 
 import aiohttp
+import pandas as pd
 from bs4 import BeautifulSoup
 
 from .utils import normalize_key
@@ -103,6 +105,7 @@ class Institution:
         """
         Realiza o parse de todos os campus referente a ies.
         """
+        from aiohttp.client import ClientTimeout
 
         campus = []
         url = self.__get_url_campus()
@@ -266,7 +269,7 @@ class Institution:
         """
         return self.data_ies
 
-    def write_json(self, filename: str):
+    def to_json(self, filename: str):
         """Escreve o arquivo json no disco.
 
         Args:
@@ -274,3 +277,27 @@ class Institution:
         """
         with open(filename, "w", encoding="utf-8") as outfile:
             json.dump(self.data_ies, outfile, indent=4, ensure_ascii=False)
+
+    def to_csv(self, filename: str):
+        """Escreve o arquivo csv no disco.
+
+        Args:
+            filename (str): nome com o caminho completo do arquivo.
+        """
+        columns = ["campus", "courses"]
+        name, extension = os.path.splitext(filename)
+
+        # save institution data
+        df_inst = pd.json_normalize(self.data_ies)
+        df_inst = df_inst[df_inst.columns.difference(columns)]
+        df_inst.to_csv(filename)
+
+        # save campus and courses
+        for col in columns:
+            if col not in self.data_ies:
+                continue
+            df = pd.json_normalize(self.data_ies[col])
+            df["code_ies"] = self.data_ies["code_ies"]
+            df["nome_da_ies"] = self.data_ies["nome_da_ies"]
+            df["mantenedora"] = self.data_ies["mantenedora"]
+            df.to_csv(f"{name}_{col}{extension}")
