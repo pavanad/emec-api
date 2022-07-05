@@ -32,7 +32,7 @@ Dependências
 As dependências do projeto estão listadas no arquivo `requirements.txt`.
 
 ```bash
-pip install -r requeriments.txt
+pip install -r requirements.txt
 ```
 
 Como usar
