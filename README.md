@@ -39,7 +39,7 @@ Como usar
 ---------
 
 ```python
-from emec import Institution
+from emec.api.client import Institution
 
 # instancia com o codigo da ies no mec
 ies = Institution(2132)
@@ -48,13 +48,13 @@ ies = Institution(2132)
 ies.parse()
 
 # escreve um arquivo json com os dados coletados
-ies.write_json('emec.json')
+ies.to_json("emec.json")
 ```
 
 Outra forma de uso
 
 ```python
-from emec import Institution
+from emec.api.client import Institution
 
 # instancia sem o codigo
 ies = Institution()
