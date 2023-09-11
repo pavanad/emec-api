@@ -39,32 +39,15 @@ Como usar
 ---------
 
 ```python
-from emec import Institution
+import time
+from emec.api.client import Institution
 
-# instancia com o codigo da ies no mec
-ies = Institution(2132)
 
-# faz o parse de todos os dados da instituicao
+start = time.time()
+ies = Institution(22)
 ies.parse()
+elapsed = time.time() - start
+print(f"Elapsed: {elapsed}")
 
-# escreve um arquivo json com os dados coletados
-ies.write_json('emec.json')
-```
-
-Outra forma de uso
-
-```python
-from emec import Institution
-
-# instancia sem o codigo
-ies = Institution()
-
-# seta o codigo da ies
-ies.set_code_ies(2132)
-
-# faz o parse de todos os dados da instituicao
-ies.parse()
-
-# pega um json com todos os dados coletados
-data = ies.get_full_data()
+ies.write_json("emec.json")
 ```
