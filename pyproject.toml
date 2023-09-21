@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "emec-api"
 version = "0.1.7"
-description = "API Python para obter informacoes de instituicoes de ensino superior."
+description = "API Python para obter informações de instituições de ensino superior."
 authors = ["Adilson Pavan <adilson.pavan@gmail.com>"]
 repository = "https://github.com/pavanad/emec-api"
 keywords = ["universidades", "cursos", "e-mec", "api", "brasil"]
