@@ -4,13 +4,13 @@ from unicodedata import normalize
 
 
 def normalize_key(key: str) -> str:
-    """Formata a chave para ser utilizada no json.
+    """Format the key to be used in json.
 
     Args:
-        key (str): Campo coletado no scraping dos dados do MEC.
+        key (str): Field collected in MEC data scraping.
 
     Returns:
-        str: Retorna a sttring formatada para ser utilizada no json.
+        str: Returns the formatted string to be used in the json.
     """
     aux = key.strip(" :").replace(" ", "_").lower()
     aux = aux.replace("_-_sigla", "")

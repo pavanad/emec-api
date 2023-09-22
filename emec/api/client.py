@@ -3,9 +3,11 @@
 import asyncio
 import base64
 import json
+import os
 from unicodedata import normalize
 
 import aiohttp
+import pandas as pd
 from bs4 import BeautifulSoup
 
 from .utils import normalize_key
@@ -13,34 +15,34 @@ from .utils import normalize_key
 
 class Institution:
     """
-    Classe responsavel pela coleta de todos os daddos da instituicao no site do e-MEC.
-    Realiza o scraping em busca de dados detalhados da IE e dos cursos de cada campus.
+    Class responsible for collecting all the institution's data on the e-MEC website.
+    Performs scraping in search of detailed data from the IE and the courses of each
+    campus.
     """
 
     BASE_URL = "https://emec.mec.gov.br/emec"
 
     def __init__(self, code_ies: int):
-        """Construtor da classe.
+        """Class constructor.
 
         Args:
-            code_ies (int): Codigo da instituicao de ensino na base de dados do MEC.
+            code_ies (int): Code of the educational institution in the MEC database.
         """
-        self.data_ies = {}
-        self.code_ies = code_ies
+        self.set_code_ies(code_ies=code_ies)
 
     def set_code_ies(self, code_ies: int):
-        """Informa o codigo da ies.
+        """Defines the code of the ies.
 
         Args:
-            code_ies (int): Codigo da instituicao de ensino na base de dados do MEC
+            code_ies (int): Code of the educational institution in the MEC database.
         """
         self.data_ies = {}
         self.code_ies = code_ies
 
     def parse(self):
-        """Realiza o parse completo de todos os dados da ies."""
+        """Perform a full parse of all IES data."""
         if self.code_ies is None or self.code_ies == 0:
-            print("informe o codigo da ies")
+            print("inform the code of the ies")
             return
 
         asyncio.run(self.__parse())
@@ -55,11 +57,11 @@ class Institution:
 
     async def __parse_institution_details(self, session) -> dict:
         """
-        Realiza o parse de todos os dados da instituicao,
-        mantenedora e as notas de conceito do MEC.
+        Performs the parse of all data from the institution,
+        maintainer and the MEC concept notes.
 
         Returns:
-            dict: dados detalhados da instituicao.
+            dict: details of the institution.
         """
         url = self.__get_url_ies()
         async with session.get(url) as resp:
@@ -79,10 +81,10 @@ class Institution:
                     continue
                 self.data_ies[key] = aux
 
-        # insere o codigo da ies
+        # insert the ies code
         self.data_ies["code_ies"] = self.code_ies
 
-        # pega as notas de conceito do MEC
+        # get the MEC concept notes
         table = soup.find(id="listar-ies-cadastro")
 
         if table is not None and table.tbody is not None:
@@ -101,9 +103,8 @@ class Institution:
 
     async def __parse_campus(self, session):
         """
-        Realiza o parse de todos os campus referente a ies.
+        Parses all campuses referring to ies.
         """
-
         campus = []
         url = self.__get_url_campus()
         async with session.get(url) as resp:
@@ -131,10 +132,10 @@ class Institution:
 
     async def __parse_courses(self, session) -> list:
         """
-        Realiza o parse de todos os dados dos cursos.
+        Parses all course data.
 
         Returns:
-            list: lista com dados do cursos em json.
+            list: list of course data in json.
         """
 
         url = self.__get_url_courses()
@@ -159,20 +160,23 @@ class Institution:
                 url_list = r.td.a["href"].split("/")
                 course_code = url_list[len(url_list) - 1]
                 tasks.append(self.__parse_course_details(course_code, session))
-        courses = await asyncio.gather(*tasks)
+        response_tasks = await asyncio.gather(*tasks)
+
+        for item in response_tasks:
+            courses.extend(item)
 
         self.data_ies["courses"] = courses
         return courses
 
     async def __parse_course_details(self, course_code: int, session) -> list:
         """
-        Realia o parse dos dados detalhados de cada curso.
+        It parses the detailed data of each course.
 
         Args:
-            code_course (int):	Codigo do curso na base de dados do MEC.
+            code_course (int):	Course code in the MEC database.
 
         Returns:
-            list: lista com dados detalhados de cada curso em json.
+            list: list with detailed data of each course in json.
         """
         url = self.__get_url_course_details(course_code)
         async with session.get(url) as resp:
@@ -231,10 +235,10 @@ class Institution:
         )
 
     def __get_url_course_details(self, course_code: int) -> str:
-        # decodifica o code_course(recebido pela pagina) que esta em iso
+        # decodes the code_course (received by the page) that is in ISO
         course_code_iso = base64.b64decode(course_code).decode("iso-8859-1")
 
-        # transforma a string retornada em bits like object para conversao
+        # transforms the returned string into object-like bits for conversion
         course_code_utf8 = str(course_code_iso).encode("utf-8")
         course_code = base64.b64encode(course_code_utf8).decode("utf-8")
 
@@ -246,28 +250,94 @@ class Institution:
         )
 
     def __get_code_ies_b64(self) -> str:
-        """Retorna o codigo da ies em base64.
+        """Returns the ies code in base64.
 
         Returns:
-            str: string do codigo da ies em base64.
+            str: ies code string in base64.
         """
         ies_code = str(self.code_ies).encode("utf-8")
         return base64.b64encode(ies_code).decode("utf-8")
 
-    def get_full_data(self) -> dict:
-        """
-        Retorna os dados completos da instituicao.
+    def __get_col_dataframe(self, col: str) -> pd.DataFrame:
+        """Returns the dataframe of a specific column.
+
+        Args:
+            col (str): name of the column.
 
         Returns:
-            dict: objeto Json com todos os dados da instituicao.
+            pd.DataFrame: Pandas dataframe with the column's data.
+        """
+        if col not in self.data_ies:
+            return pd.DataFrame()
+        df = pd.json_normalize(self.data_ies[col])
+        df["code_ies"] = self.data_ies["code_ies"]
+        df["nome_da_ies"] = self.data_ies["nome_da_ies"]
+        df["mantenedora"] = self.data_ies["mantenedora"]
+        return df
+
+    def get_full_json(self) -> dict:
+        """
+        Returns the complete data of the institution.
+
+        Returns:
+            dict: Json object with all the institution's data.
         """
         return self.data_ies
 
-    def write_json(self, filename: str):
-        """Escreve o arquivo json no disco.
+    def get_institution_dataframe(self) -> pd.DataFrame:
+        """
+        Returns only institution data in a pandas dataframe.
+
+        Returns:
+            pd.DataFrame: Pandas dataframe with only the institution's data.
+        """
+        df_inst = pd.json_normalize(self.data_ies)
+        df_inst = df_inst[df_inst.columns.difference(["campus", "courses"])]
+        return df_inst
+
+    def get_campus_dataframe(self) -> pd.DataFrame:
+        """
+        Returns only campus data in a pandas dataframe.
+
+        Returns:
+            pd.DataFrame: Pandas dataframe with only the campus's data.
+        """
+        return self.__get_col_dataframe("campus")
+
+    def get_courses_dataframe(self) -> pd.DataFrame:
+        """
+        Returns only courses data in a pandas dataframe.
+
+        Returns:
+            pd.DataFrame: Pandas dataframe with only the courses's data.
+        """
+        return self.__get_col_dataframe("courses")
+
+    def to_json(self, filename: str):
+        """Writes the json file to disk.
 
         Args:
-            filename (str): nome com o caminho completo do arquivo.
+            filename (str): name with the full path of the file.
         """
-        with open(filename, "a", encoding="utf-8") as outfile:
+        with open(filename, "w", encoding="utf-8") as outfile:
             json.dump(self.data_ies, outfile, indent=4, ensure_ascii=False)
+
+    def to_csv(self, filename: str):
+        """Writes the csv file to disk.
+
+        Args:
+            filename (str): name with the full path of the file.
+        """
+        columns = ["campus", "courses"]
+        name, extension = os.path.splitext(filename)
+
+        # save institution data
+        df_inst = self.get_institution_dataframe()
+        df_inst.to_csv(filename)
+
+        # save campus and courses
+        for col in columns:
+            if col not in self.data_ies:
+                continue
+            df = self.__get_col_dataframe(col)
+            df.to_csv(f"{name}_{col}{extension}")

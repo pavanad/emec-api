@@ -1,5 +1,4 @@
-e-MEC API
-=========
+# e-MEC API
 
 API Python para consulta na base de dados oficial de informações relativas às Instituições de Educação Superior (e-MEC).
 
@@ -7,8 +6,7 @@ Esta API faz requests e parse no Html do site do e-MEC para coletar informaçõe
 
 [emec.mec.gov.br](http://emec.mec.gov.br/)
 
-Instalação
-----------
+## Instalação
 
 A versão atual **ainda esta em fase de desenvolvimento**
 
@@ -26,8 +24,8 @@ pip install emec-api
 
 [git]: https://github.com/pavanad/emec-api "e-MEC API"
 
-Dependências
-------------
+## Dependências
+
 
 As dependências do projeto estão listadas no arquivo `requirements.txt`.
 
@@ -35,13 +33,11 @@ As dependências do projeto estão listadas no arquivo `requirements.txt`.
 pip install -r requirements.txt
 ```
 
-Como usar
----------
+## Como usar
 
 ```python
 import time
 from emec.api.client import Institution
-
 
 start = time.time()
 ies = Institution(22)
@@ -49,5 +45,18 @@ ies.parse()
 elapsed = time.time() - start
 print(f"Elapsed: {elapsed}")
 
-ies.write_json("emec.json")
+df_inst = ies.get_institution_dataframe()
+print(df_inst.head())
+
+df_campus = ies.get_campus_dataframe()
+print(df_campus.head())
+
+df_courses = ies.get_courses_dataframe()
+print(df_courses.head())
+
+# export to json
+ies.to_json("emec.json")
+
+# export to csv
+ies.to_csv("emec.csv")
 ```

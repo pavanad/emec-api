@@ -11,5 +11,5 @@ class AboutCommand(Command):
         title = custom_fig.renderText("emec api")
         self.line(
             f"{title}\n<info>This tool was developed to facilitate"
-            f" the use of the emec api app.</info>"
+            f" the use of the e-MEC API app.</info>\n"
         )
