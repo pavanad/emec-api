@@ -1,10 +1,14 @@
 # e-MEC API
 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
+
 API Python para consulta na base de dados oficial de informações relativas às Instituições de Educação Superior (e-MEC).
 
 Esta API faz requests e parse no Html do site do e-MEC para coletar informações sobre as instituições e os cursos de cada campus.
 
-[emec.mec.gov.br](http://emec.mec.gov.br/)
+[e-MEC - Ministério da Educação](http://emec.mec.gov.br/)
 
 ## Instalação
 
@@ -27,10 +31,10 @@ pip install emec-api
 ## Dependências
 
 
-As dependências do projeto estão listadas no arquivo `requirements.txt`.
+Utilize o poetry para instalar as dependências do projeto.
 
 ```bash
-pip install -r requirements.txt
+poetry install
 ```
 
 ## Como usar
