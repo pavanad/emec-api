@@ -1,7 +1,12 @@
+import os
+import time
+from pprint import pprint
+from tqdm import tqdm
+
+import pandas as pd
 from cleo import Command
 
 from emec.api.client import Institution
-from pprint import pprint
 
 
 class ScraperCommand(Command):
@@ -10,29 +15,35 @@ class ScraperCommand(Command):
 
     scraper
         {--ies=? : Institution code to scraping}
+        {--file=? : File exported from EMEC containing a list of institutions}
         {--output=? : File output name.}
-        {--format=json : File output format (json or csv)}
+        {--format=json : File output format only to ies (json or csv only in --ies)}
     """
+
+    MAX_RETRIES = 10
 
     def handle(self):
         code_ies = self.option("ies")
         if code_ies:
-            try:
-                code_ies = int(code_ies)
-            except ValueError:
-                self.line(
-                    "\n> <error>The institution's code needs to be "
-                    "an integer.</error>\n"
-                )
-            else:
-                self.__scrape_insitution_data(code_ies)
+            self.__scrape_insitution_data(code_ies)
 
-    def __scrape_insitution_data(self, code_ies: int):
-        self.line(f"\n> <comment>Scraping data for institution  {code_ies}</comment>")
+        filename = self.option("file")
+        if filename:
+            self.__scrape_list_institutions(filename)
 
+    def __scrape_insitution_data(self, code_ies: str):
         try:
+            code_ies = int(code_ies)
+            self.line(
+                f"\n> <comment>Scraping data for institution  {code_ies}</comment>"
+            )
             ies = Institution(code_ies)
             ies.parse()
+        except ValueError:
+            self.line(
+                "\n> <error>The institution's code needs to be " "an integer.</error>\n"
+            )
+            return
         except Exception as error:
             self.line(f"> <error>{error}</error>\n")
             return
@@ -51,3 +62,57 @@ class ScraperCommand(Command):
         self.line("")
         if show:
             pprint(ies.get_full_json())
+
+    def __scrape_list_institutions(self, filename: str):
+        if not os.path.exists(filename):
+            self.line(f"> <error>File {filename} does not exist.</error>\n")
+            return
+
+        df = pd.read_csv(filename)
+        df.drop_duplicates(subset=["Código da IES"], inplace=True)
+
+        df_consolidate = pd.DataFrame()
+        code_ies = df["Código da IES"].tolist()
+
+        ies_failed = []
+        self.line(f"\n> Parsing list of institutions")
+
+        for code in tqdm(code_ies):
+            retries = 0
+            success = False
+            error_message = ""
+            while retries < self.MAX_RETRIES and not success:
+                try:
+                    ies = Institution(code)
+                    ies.parse()
+                    df_courses = ies.get_courses_dataframe()
+                    df_consolidate = pd.concat(
+                        [df_consolidate, df_courses], ignore_index=True
+                    )
+                    success = True
+                except Exception as error:
+                    if retries == 0:
+                        error_message = str(error)
+
+                    retries += 1
+                    time.sleep(2)
+
+            if not success:
+                ies_failed.append({"code": code, "error": error_message})
+
+        self.line("\n> <info>Data collected successfully.</info>\n")
+
+        if ies_failed:
+            self.line("> <error>Failed to parse the following institutions:</error>\n")
+            table = self.table()
+            table.set_header_row(["Code", "Error"])
+            errors = [[str(item["code"]), item["error"]] for item in ies_failed]
+            table.set_rows(errors)
+            table.render(self.io)
+
+        output = (
+            self.option("output")
+            if self.option("output")
+            else "scraped_institutions.csv"
+        )
+        df_consolidate.to_csv(output, index=False)
