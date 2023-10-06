@@ -14,6 +14,7 @@ class ScraperCommand(Command):
     This command is used to scraper institutions data from emec.
 
     scraper
+        {category=inst : Data category to scraping (inst, campus or courses)}
         {--ies=? : Institution code to scraping}
         {--file=? : File exported from EMEC containing a list of institutions}
         {--output=? : File output name.}
@@ -77,6 +78,8 @@ class ScraperCommand(Command):
         ies_failed = []
         self.line(f"\n> Parsing list of institutions")
 
+        category = self.argument("category")
+
         for code in tqdm(code_ies):
             retries = 0
             success = False
@@ -85,9 +88,14 @@ class ScraperCommand(Command):
                 try:
                     ies = Institution(code)
                     ies.parse()
-                    df_courses = ies.get_courses_dataframe()
+                    category_method = {
+                        "inst": ies.get_institution_dataframe,
+                        "campus": ies.get_campus_dataframe,
+                        "courses": ies.get_courses_dataframe,
+                    }
+                    df_scraping = category_method[category]()
                     df_consolidate = pd.concat(
-                        [df_consolidate, df_courses], ignore_index=True
+                        [df_consolidate, df_scraping], ignore_index=True
                     )
                     success = True
                 except Exception as error:
