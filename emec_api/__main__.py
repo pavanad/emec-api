@@ -1,6 +1,6 @@
 import sys
 
-from emec.application import Application
+from emec_api.application import Application
 
 
 def main():

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "emec-api"
-version = "0.1.7"
+version = "0.1.8"
 description = "API Python para obter informações de instituições de ensino superior."
 authors = ["Adilson Pavan <adilson.pavan@gmail.com>"]
 repository = "https://github.com/pavanad/emec-api"
@@ -9,7 +9,7 @@ license = "MIT License"
 readme = "README.md"
 
 [tool.poetry.scripts]
-emec = "emec.__main__:main"
+emec = "emec_api.__main__:main"
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -25,6 +25,9 @@ tqdm = "^4.66.1"
 black = "^22.1.0"
 flake8 = "^4.0.1"
 bandit = "^1.7.3"
+
+[tool.poetry.group.dev.dependencies]
+twine = "^5.1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

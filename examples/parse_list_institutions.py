@@ -2,7 +2,7 @@ import time
 
 import pandas as pd
 
-from emec.api.client import Institution
+from emec_api.api.client import Institution
 
 MAX_RETRIES = 10
 
