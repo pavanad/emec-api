@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
-from emec.api.client import Institution
+from emec_api.api.client import Institution
 
 
 def main():

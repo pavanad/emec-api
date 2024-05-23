@@ -16,6 +16,7 @@ clean:
 	find . -name '*.pyc' -exec rm --force {} +;\
 	find . -name '*.pyo' -exec rm --force {} +;\
 	find . | grep -E "__pycache__|.pyc" | xargs rm -rf;\
+	rm -rf dist/;\
 
 lint:
 	@echo "\nRun lint project\n";\

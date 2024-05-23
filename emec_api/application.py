@@ -5,7 +5,7 @@ from .commands.scraper import ScraperCommand
 
 
 try:
-    from emec.__version__ import __version__
+    from emec_api.__version__ import __version__
 except ImportError:
     from __version__ import __version__
 

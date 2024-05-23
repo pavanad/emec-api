@@ -6,7 +6,7 @@ from tqdm import tqdm
 import pandas as pd
 from cleo import Command
 
-from emec.api.client import Institution
+from emec_api.api.client import Institution
 
 
 class ScraperCommand(Command):
