@@ -19,6 +19,7 @@ pyfiglet = "^0.8.post1"
 aiohttp = "^3.8.1"
 pandas = "^1.4.2"
 tqdm = "^4.66.1"
+numpy = "1.26.4"
 
 
 [tool.poetry.dev-dependencies]
