@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "emec-api"
-version = "0.1.9"
+version = "0.1.10"
 description = "API Python para obter informações de instituições de ensino superior."
 authors = ["Adilson Pavan <adilson.pavan@gmail.com>"]
 repository = "https://github.com/pavanad/emec-api"
@@ -19,6 +19,7 @@ pyfiglet = "^0.8.post1"
 aiohttp = "^3.8.1"
 pandas = "^1.4.2"
 tqdm = "^4.66.1"
+numpy = "1.26.4"
 
 
 [tool.poetry.dev-dependencies]

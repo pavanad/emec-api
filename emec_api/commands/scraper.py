@@ -76,7 +76,7 @@ class ScraperCommand(Command):
         code_ies = df["Código da IES"].tolist()
 
         ies_failed = []
-        self.line(f"\n> Parsing list of institutions")
+        self.line("\n> Parsing list of institutions")
 
         category = self.argument("category")
 
